@@ -1,8 +1,11 @@
 extern crate kiss3d;
 extern crate nalgebra as na;
 
-use client_server::standard_scale;
+use std::fmt::Formatter;
+use client_server::{standard_scale};
 use client_server::GroupToRotate;
+
+pub mod corner_memory;
 
 use kiss3d::light::Light;
 use kiss3d::window::Window;
@@ -11,8 +14,10 @@ use kiss3d::scene::Object;
 use kiss3d::scene::SceneNode;
 
 use std::path::Path;
+use std::time::{Duration, Instant};
 
 use na::{Vector3, Point3, Isometry3, UnitQuaternion, Translation2, Translation3};
+use crate::corner_memory::CornerMemory;
 
 fn main() {
 
@@ -34,7 +39,7 @@ fn main() {
     //Creating camera-------------------------------------------------------------------------------
 
     let eye = Point3::new(75.0, 100.0, 75.0);
-    let at = Point3::new(0.0, 40.0, 0.0);
+    let at = Point3::new(0.0, 30.0, 0.0);
     let mut arc_ball = ArcBall::new(eye, at);
 
     //Creating objects------------------------------------------------------------------------------
@@ -51,22 +56,65 @@ fn main() {
 
     //Coloring--------------------------------------------------------------------------------------
 
-    obj1.set_color(1.0, 1.0, 0.0);
-    obj2.set_color(1.0, 0.0, 1.0);
-    obj3.set_color(0.0, 1.0, 1.0);
+    //obj1.set_color(1.0, 1.0, 0.0);
+    //obj2.set_color(1.0, 0.0, 1.0);
+    //obj3.set_color(0.0, 1.0, 1.0);
     top.set_color(1.0, 1.0, 1.0);
+
+    //Creating CornerMemory object------------------------------------------------------------------
+
+    let mut mem = client_server::corner_memory::CornerMemory::new();
 
     //Test rotation---------------------------------------------------------------------------------
 
-    let mut vec = vec![&mut top, &mut obj3];
-    let mut top_group = GroupToRotate::from(vec);
-    top_group.rotate(5.0);
+
 
     //Rendering-------------------------------------------------------------------------------------
 
+    let start_time = Instant::now();
+    let mut in_start = false;
+    let mut in_start1 = false;
     while win.render_with_camera(&mut arc_ball){
 
-        win.draw_point(&Point3::new(0.0, 0.0, 0.0), &Point3::new(1.0, 0.0, 0.0));
+        let now = start_time.elapsed();
+        win.draw_point(&Point3::new(0.0, 0.0, 0.0), &Point3::new(1.0, 1.0, 1.0));
+
+
+        if (now > Duration::new(0, 0)) && (now < Duration::new(3, 0)) {
+            let mut vec = vec![&mut top, &mut obj3, &mut obj2];
+            let mut group = GroupToRotate::from(vec, "A", &mut mem);
+            group.rotate(0.003);
+        }
+
+        if (now > Duration::new(3, 0)) && (now < Duration::new(6, 0)) {
+            let mut vec = vec![&mut top, &mut obj3, &mut obj2];
+            let mut group = GroupToRotate::from(vec, "B", &mut mem);
+            group.rotate(0.003);
+        }
+
+        if (now > Duration::new(6, 0)) && (now < Duration::new(9, 0)) {
+            let mut vec = vec![&mut top, &mut obj3, &mut obj2];
+            let mut group = GroupToRotate::from(vec, "C", &mut mem);
+            group.rotate(0.003);
+        }
+
+        if (now > Duration::new(9, 0)) && (now < Duration::new(12, 0)) {
+            let mut vec = vec![&mut top, &mut obj3, &mut obj2];
+            let mut group = GroupToRotate::from(vec, "B", &mut mem);
+            group.rotate(-0.01);
+        }
+
+        if (now > Duration::new(12, 0)) && (now < Duration::new(15, 0)) {
+            let mut vec = vec![&mut top, &mut obj3, &mut obj2];
+            let mut group = GroupToRotate::from(vec, "A", &mut mem);
+            group.rotate(0.005);
+        }
+
+        if (now > Duration::new(15, 0)) && (now < Duration::new(18, 0)) {
+            let mut vec = vec![&mut top, &mut obj3, &mut obj2];
+            let mut group = GroupToRotate::from(vec, "C", &mut mem);
+            group.rotate(-0.008);
+        }
 
     }
 }
