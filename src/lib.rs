@@ -34,11 +34,13 @@ impl<'a> GroupToRotate<'_> {
         let mut rotate_corner_a = 0.0;
         let mut rotate_corner_b = 0.0;
         let mut rotate_corner_c = 0.0;
+        let mut rotate_corner_d = 0.0;
 
         match self.axis_type {
             "A" => rotate_corner_a = corner,
             "B" => rotate_corner_b = corner,
             "C" => rotate_corner_c = corner,
+            "D" => rotate_corner_d = corner,
             _ => (),
         }
 
@@ -70,23 +72,36 @@ impl<'a> GroupToRotate<'_> {
             self.objects[i].append_translation(&Translation3::new(0.0, 15.0, 0.0));
         }
         self.corner_memory.axis_corner_c += rotate_corner_c;
+
+        //D-axis rotation---------------------------------------------------------------------------
+
+        for i in 0..4 {
+            self.objects[i].append_rotation(&UnitQuaternion::new(Vector3::new(0.0, rotate_corner_d+self.corner_memory.axis_corner_d, 0.0)));
+        }
+        self.corner_memory.axis_corner_d += rotate_corner_d;
     }
 
     fn start_position(&mut self) {
 
-        let corner= self.corner_memory.axis_corner_c * (-1.0);
+        let corner= self.corner_memory.axis_corner_d * (-1.0);
+        for i in 0..=3 {
+            self.objects[i].append_rotation(&UnitQuaternion::new(Vector3::new(0.0, corner, 0.0)));
+        }
 
+        let corner= self.corner_memory.axis_corner_c * (-1.0);
         for i in 0..=2 {
             self.objects[i].append_translation(&Translation3::new(0.0, -15.0, 0.0));
             self.objects[i].append_rotation(&UnitQuaternion::new(Vector3::new(0.0, 0.0, corner)));
             self.objects[i].append_translation(&Translation3::new(0.0, 15.0, 0.0));
         }
+
         let corner = self.corner_memory.axis_corner_b * (-1.0);
         for i in 0..=1 {
             self.objects[i].append_translation(&Translation3::new(0.0, -37.5, 0.0));
             self.objects[i].append_rotation(&UnitQuaternion::new(Vector3::new(0.0, 0.0, corner)));
             self.objects[i].append_translation(&Translation3::new(0.0, 37.5, 0.0));
         }
+
         let corner = self.corner_memory.axis_corner_a * (-1.0);
         for i in 0..=0 {
             self.objects[i].append_translation(&Translation3::new(0.0, -57.5, 0.0));

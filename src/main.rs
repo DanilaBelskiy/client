@@ -39,7 +39,7 @@ fn main() {
     //Creating camera-------------------------------------------------------------------------------
 
     let eye = Point3::new(75.0, 100.0, 75.0);
-    let at = Point3::new(0.0, 30.0, 0.0);
+    let at = Point3::new(0.0, 40.0, 0.0);
     let mut arc_ball = ArcBall::new(eye, at);
 
     //Creating objects------------------------------------------------------------------------------
@@ -59,15 +59,11 @@ fn main() {
     //obj1.set_color(1.0, 1.0, 0.0);
     //obj2.set_color(1.0, 0.0, 1.0);
     //obj3.set_color(0.0, 1.0, 1.0);
-    top.set_color(1.0, 1.0, 1.0);
+    //top.set_color(1.0, 1.0, 1.0);
 
     //Creating CornerMemory object------------------------------------------------------------------
 
     let mut mem = client_server::corner_memory::CornerMemory::new();
-
-    //Test rotation---------------------------------------------------------------------------------
-
-
 
     //Rendering-------------------------------------------------------------------------------------
 
@@ -79,42 +75,21 @@ fn main() {
         let now = start_time.elapsed();
         win.draw_point(&Point3::new(0.0, 0.0, 0.0), &Point3::new(1.0, 1.0, 1.0));
 
+        let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
+        let mut group = GroupToRotate::from(vec, "D", &mut mem);
+        group.rotate(0.03);
 
-        if (now > Duration::new(0, 0)) && (now < Duration::new(3, 0)) {
-            let mut vec = vec![&mut top, &mut obj3, &mut obj2];
-            let mut group = GroupToRotate::from(vec, "A", &mut mem);
-            group.rotate(0.003);
-        }
+        let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
+        let mut group = GroupToRotate::from(vec, "B", &mut mem);
+        group.rotate(0.03);
 
-        if (now > Duration::new(3, 0)) && (now < Duration::new(6, 0)) {
-            let mut vec = vec![&mut top, &mut obj3, &mut obj2];
-            let mut group = GroupToRotate::from(vec, "B", &mut mem);
-            group.rotate(0.003);
-        }
+        let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
+        let mut group = GroupToRotate::from(vec, "A", &mut mem);
+        group.rotate(0.03);
 
-        if (now > Duration::new(6, 0)) && (now < Duration::new(9, 0)) {
-            let mut vec = vec![&mut top, &mut obj3, &mut obj2];
-            let mut group = GroupToRotate::from(vec, "C", &mut mem);
-            group.rotate(0.003);
-        }
-
-        if (now > Duration::new(9, 0)) && (now < Duration::new(12, 0)) {
-            let mut vec = vec![&mut top, &mut obj3, &mut obj2];
-            let mut group = GroupToRotate::from(vec, "B", &mut mem);
-            group.rotate(-0.01);
-        }
-
-        if (now > Duration::new(12, 0)) && (now < Duration::new(15, 0)) {
-            let mut vec = vec![&mut top, &mut obj3, &mut obj2];
-            let mut group = GroupToRotate::from(vec, "A", &mut mem);
-            group.rotate(0.005);
-        }
-
-        if (now > Duration::new(15, 0)) && (now < Duration::new(18, 0)) {
-            let mut vec = vec![&mut top, &mut obj3, &mut obj2];
-            let mut group = GroupToRotate::from(vec, "C", &mut mem);
-            group.rotate(-0.008);
-        }
+        let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
+        let mut group = GroupToRotate::from(vec, "C", &mut mem);
+        group.rotate(0.03);
 
     }
 }
