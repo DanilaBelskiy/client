@@ -3,6 +3,9 @@ use egui::style::Spacing;
 
 use client_server::GroupToRotate;
 
+use std::fs::File;
+use std::io::Write;
+
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -65,10 +68,8 @@ impl eframe::App for TemplateApp {
             corner_d,
             check_box} = self;
 
-        // Examples of how to create different panels and windows.
-        // Pick whichever suits you.
-        // Tip: a good default choice is to just keep the `CentralPanel`.
-        // For inspiration and more examples, go to https://emilk.github.io/egui
+        let mut output = File::create("current_corners.txt").unwrap();
+        write!(output, "{}\n{}\n{}\n{}", corner_a, corner_b, corner_c, corner_d).unwrap();
 
         #[cfg(not(target_arch = "wasm32"))] // no File->Quit on web pages!
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {

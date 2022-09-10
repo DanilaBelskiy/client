@@ -3,6 +3,7 @@ extern crate nalgebra as na;
 
 use client_server::corner_memory::CornerMemory;
 use client_server::standard_scale;
+use client_server::GroupToRotate;
 
 use kiss3d::light::Light;
 use kiss3d::window::Window;
@@ -13,6 +14,8 @@ use kiss3d::scene::SceneNode;
 use std::path::Path;
 use std::time::{Duration, Instant};
 use std::{thread, time};
+use std::fs::File;
+use std::io::{BufReader, BufRead};
 
 use na::{Vector3, Point3, Isometry3, UnitQuaternion, Translation2, Translation3};
 
@@ -65,6 +68,53 @@ fn main() {
     //Rendering-------------------------------------------------------------------------------------
 
     while true {
+
+        let current_corners_file = File::open("current_corners.txt").unwrap();
+        let buffered = BufReader::new(current_corners_file);
+
+        let mut current_corners:Vec<f32> = Vec::new();
+
+        for line in buffered.lines() {
+            let output = match line {
+                Ok(out) => out,
+                Err(err) => panic!("Bad")
+            };
+            let number = output.parse::<f32>().unwrap();
+            current_corners.push(number);
+        }
+
+        let current_corner_a = current_corners[0];
+        let current_corner_b = current_corners[1];
+        let current_corner_c = current_corners[2];
+        let current_corner_d = current_corners[3];
+
+        if &mem.axis_corner_a != &current_corner_a {
+            let corner = &current_corner_a-&mem.axis_corner_a;
+            let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
+            let mut group = GroupToRotate::from(vec, "A", &mut mem);
+            group.rotate(corner);
+        }
+
+        if &mem.axis_corner_b != &current_corner_b {
+            let corner = &current_corner_b-&mem.axis_corner_b;
+            let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
+            let mut group = GroupToRotate::from(vec, "B", &mut mem);
+            group.rotate(corner);
+        }
+
+        if &mem.axis_corner_c != &current_corner_c {
+            let corner = &current_corner_c-&mem.axis_corner_c;
+            let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
+            let mut group = GroupToRotate::from(vec, "C", &mut mem);
+            group.rotate(corner);
+        }
+
+        if &mem.axis_corner_d != &current_corner_d {
+            let corner = &current_corner_d-&mem.axis_corner_d;
+            let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
+            let mut group = GroupToRotate::from(vec, "D", &mut mem);
+            group.rotate(corner);
+        }
 
         win.render_with_camera(&mut arc_ball);
 
