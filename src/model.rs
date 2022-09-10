@@ -79,41 +79,44 @@ fn main() {
                 Ok(out) => out,
                 Err(err) => panic!("Bad")
             };
-            let number = output.parse::<f32>().unwrap();
+            let number = output.parse::<f32>().unwrap_or(0.0);
             current_corners.push(number);
         }
 
-        let current_corner_a = current_corners[0];
-        let current_corner_b = current_corners[1];
-        let current_corner_c = current_corners[2];
-        let current_corner_d = current_corners[3];
+        if current_corners.len() > 0 {
+            let current_corner_a = current_corners[0];
+            let current_corner_b = current_corners[1];
+            let current_corner_c = current_corners[2];
+            let current_corner_d = current_corners[3];
 
-        if &mem.axis_corner_a != &current_corner_a {
-            let corner = &current_corner_a-&mem.axis_corner_a;
-            let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
-            let mut group = GroupToRotate::from(vec, "A", &mut mem);
-            group.rotate(corner);
-        }
 
-        if &mem.axis_corner_b != &current_corner_b {
-            let corner = &current_corner_b-&mem.axis_corner_b;
-            let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
-            let mut group = GroupToRotate::from(vec, "B", &mut mem);
-            group.rotate(corner);
-        }
+            if &mem.axis_corner_a != &current_corner_a {
+                let corner = &current_corner_a - &mem.axis_corner_a;
+                let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
+                let mut group = GroupToRotate::from(vec, "A", &mut mem);
+                group.rotate(corner);
+            }
 
-        if &mem.axis_corner_c != &current_corner_c {
-            let corner = &current_corner_c-&mem.axis_corner_c;
-            let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
-            let mut group = GroupToRotate::from(vec, "C", &mut mem);
-            group.rotate(corner);
-        }
+            if &mem.axis_corner_b != &current_corner_b {
+                let corner = &current_corner_b - &mem.axis_corner_b;
+                let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
+                let mut group = GroupToRotate::from(vec, "B", &mut mem);
+                group.rotate(corner);
+            }
 
-        if &mem.axis_corner_d != &current_corner_d {
-            let corner = &current_corner_d-&mem.axis_corner_d;
-            let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
-            let mut group = GroupToRotate::from(vec, "D", &mut mem);
-            group.rotate(corner);
+            if &mem.axis_corner_c != &current_corner_c {
+                let corner = &current_corner_c - &mem.axis_corner_c;
+                let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
+                let mut group = GroupToRotate::from(vec, "C", &mut mem);
+                group.rotate(corner);
+            }
+
+            if &mem.axis_corner_d != &current_corner_d {
+                let corner = &current_corner_d - &mem.axis_corner_d;
+                let mut vec = vec![&mut top, &mut obj3, &mut obj2, &mut obj1];
+                let mut group = GroupToRotate::from(vec, "D", &mut mem);
+                group.rotate(corner);
+            }
         }
 
         win.render_with_camera(&mut arc_ball);

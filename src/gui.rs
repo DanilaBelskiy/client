@@ -126,76 +126,76 @@ impl eframe::App for TemplateApp {
             ui.spacing_mut().slider_width = 200.0;
             ui.spacing_mut().button_padding = Vec2::new(15.0, 5.0);
 
-            ui.add( egui::Slider::new(corner_a, -10.0..=10.0).text("Axis A"));
+            ui.add( egui::Slider::new(corner_a, -1.5..=1.5).text("Axis A"));
             ui.horizontal(|ui| {
                 if ui.button("MAX").clicked() {
-                    *corner_a = 10.0;
+                    *corner_a = 1.5;
 
                 }
                 if ui.button("MIN").clicked() {
-                    *corner_a = -10.0;
+                    *corner_a = -1.5;
 
                 }
                 if ui.button("+").clicked() {
-                    *corner_a += 1.0;
+                    *corner_a += 0.1;
 
                 }
                 if ui.button("-").clicked() {
-                    *corner_a -= 1.0;
+                    *corner_a -= 0.1;
                 }
             });
-            ui.add( egui::Slider::new(corner_b, -10.0..=10.0).text("Axis B"));
+            ui.add( egui::Slider::new(corner_b, -1.5..=1.5).text("Axis B"));
             ui.horizontal(|ui| {
                 if ui.button("MAX").clicked() {
-                    *corner_b = 10.0;
+                    *corner_b = 1.5;
 
                 }
                 if ui.button("MIN").clicked() {
-                    *corner_b = -10.0;
+                    *corner_b = -1.5;
 
                 }
                 if ui.button("+").clicked() {
-                    *corner_b += 1.0;
+                    *corner_b += 0.1;
 
                 }
                 if ui.button("-").clicked() {
-                    *corner_b -= 1.0;
+                    *corner_b -= 0.1;
                 }
             });
-            ui.add( egui::Slider::new(corner_c, -10.0..=10.0).text("Axis C"));
+            ui.add( egui::Slider::new(corner_c, -1.5..=1.5).text("Axis C"));
             ui.horizontal(|ui| {
                 if ui.button("MAX").clicked() {
-                    *corner_c = 10.0;
+                    *corner_c = 1.5;
 
                 }
                 if ui.button("MIN").clicked() {
-                    *corner_c = -10.0;
+                    *corner_c = -1.5;
 
                 }
                 if ui.button("+").clicked() {
-                    *corner_c += 1.0;
+                    *corner_c += 0.1;
 
                 }
                 if ui.button("-").clicked() {
-                    *corner_c -= 1.0;
+                    *corner_c -= 0.1;
                 }
             });
-            ui.add( egui::Slider::new(corner_d, -10.0..=10.0).text("Axis D"));
+            ui.add( egui::Slider::new(corner_d, -3.3..=3.3).text("Axis D"));
             ui.horizontal(|ui| {
                 if ui.button("MAX").clicked() {
-                    *corner_d = 10.0;
+                    *corner_d = 3.3;
 
                 }
                 if ui.button("MIN").clicked() {
-                    *corner_d = -10.0;
+                    *corner_d = -3.3;
 
                 }
                 if ui.button("+").clicked() {
-                    *corner_d += 1.0;
+                    *corner_d += 0.1;
 
                 }
                 if ui.button("-").clicked() {
-                    *corner_d -= 1.0;
+                    *corner_d -= 0.1;
                 }
             });
         });
