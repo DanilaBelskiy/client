@@ -1,10 +1,14 @@
 use egui::{SliderOrientation, Ui, Vec2};
 use egui::style::Spacing;
+use egui::Label;
 
 use client_server::GroupToRotate;
 
 use std::fs::File;
 use std::io::Write;
+use std::string::String;
+
+use serde::__private::de::Content::String as OtherString;
 
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
@@ -22,6 +26,9 @@ pub struct TemplateApp {
     corner_d: f32,
 
     check_box: bool,
+
+    login_str: String,
+    password_str: String,
 }
 
 impl Default for TemplateApp {
@@ -34,6 +41,8 @@ impl Default for TemplateApp {
             corner_c: 0.0,
             corner_d: 0.0,
             check_box: false,
+            login_str: String::new(),
+            password_str: String::new(),
         }
     }
 }
@@ -66,7 +75,10 @@ impl eframe::App for TemplateApp {
             corner_b,
             corner_c,
             corner_d,
-            check_box} = self;
+            check_box,
+            login_str,
+            password_str,
+        } = self;
 
         let mut output = File::create("current_corners.txt").unwrap();
         write!(output, "{}\n{}\n{}\n{}", corner_a, corner_b, corner_c, corner_d).unwrap();
@@ -105,19 +117,25 @@ impl eframe::App for TemplateApp {
             }
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
+
+                if ui.button("Log in").clicked() {
+                    // logging in
+                };
+
                 ui.horizontal(|ui| {
-                    ui.spacing_mut().item_spacing.x = 0.0;
-                    ui.label("powered by ");
-                    ui.hyperlink_to("egui", "https://github.com/emilk/egui");
-                    ui.label(" and ");
-                    ui.hyperlink_to(
-                        "eframe",
-                        "https://github.com/emilk/egui/tree/master/crates/eframe",
-                    );
-                    ui.label(".");
+                    ui.label("Login: ");
+                    ui.text_edit_singleline(login_str);
+                });
+
+                ui.horizontal(|ui| {
+                    ui.label("Password: ");
+                    ui.text_edit_singleline(password_str);
+                });
+
+                ui.label("");
+
                 });
             });
-        });
 
         egui::CentralPanel::default().show(ctx, |ui| {
 
