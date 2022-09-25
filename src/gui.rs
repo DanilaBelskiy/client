@@ -5,18 +5,22 @@ use egui::Label;
 use client_server::GroupToRotate;
 
 use std::fs::File;
-use std::io::Write;
 use std::string::String;
+use std::net::TcpStream;
+use std::io::{self,prelude::*,BufReader,Write};
+use std::str;
 
-use serde::__private::de::Content::String as OtherString;
+use serde::__private::de::Content::{String as OtherString};
+use serde::de::Unexpected::Option;
 
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct TemplateApp {
-    // Example stuff:
-    label: String,
+
+    #[serde(skip)]
+    stream: TcpStream, //Option<TcpStream>,
 
     // this how you opt-out of serialization of a member
     #[serde(skip)]
@@ -26,16 +30,16 @@ pub struct TemplateApp {
     corner_d: f32,
 
     check_box: bool,
+    is_connected_user: bool,
 
     login_str: String,
     password_str: String,
+    message_to_user: String,
 }
 
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
-            // Example stuff:
-            label: "Hello World!".to_owned(),
             corner_a: 0.0,
             corner_b: 0.0,
             corner_c: 0.0,
@@ -43,34 +47,23 @@ impl Default for TemplateApp {
             check_box: false,
             login_str: String::new(),
             password_str: String::new(),
+            message_to_user: String::new(),
+            is_connected_user: false,
+            stream: TcpStream::connect("127.0.0.1:7878").unwrap(),
         }
     }
 }
 
 impl TemplateApp {
-    /// Called once before the first frame.
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        // This is also where you can customized the look at feel of egui using
-        // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
-
-        // Load previous app state (if any).
-        // Note that you must enable the `persistence` feature for this to work.
-        if let Some(storage) = cc.storage {
-            return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
-        }
-
         Default::default()
     }
 }
 
 impl eframe::App for TemplateApp {
-    /// Called by the frame work to save state before shutdown.
-    fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, eframe::APP_KEY, self);
-    }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let Self { label,
+        let Self {
             corner_a,
             corner_b,
             corner_c,
@@ -78,10 +71,22 @@ impl eframe::App for TemplateApp {
             check_box,
             login_str,
             password_str,
+            message_to_user,
+            is_connected_user,
+            stream,
         } = self;
 
         let mut output = File::create("current_corners.txt").unwrap();
         write!(output, "{}\n{}\n{}\n{}", corner_a, corner_b, corner_c, corner_d).unwrap();
+
+        if *check_box{
+            stream.write(format!("MOVE-{corner_a}-{corner_b}-{corner_c}-{corner_d}").as_bytes()).expect("failed to write");
+
+            let mut reader = BufReader::new(&*stream);
+            let mut buffer: Vec<u8> = Vec::new();
+
+            reader.read_until(b'\n',&mut buffer).unwrap();
+        };
 
         #[cfg(not(target_arch = "wasm32"))] // no File->Quit on web pages!
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
@@ -105,37 +110,79 @@ impl eframe::App for TemplateApp {
             if *check_box == false {
                 ui.horizontal(|ui| {
                     if ui.button("MOVE").clicked() {
-                        //pass
+                        stream.write(format!("MOVE_{corner_a}_{corner_b}_{corner_c}_{corner_d}").as_bytes()).expect("failed to write");
+
+                        let mut reader = BufReader::new(&*stream);
+                        let mut buffer: Vec<u8> = Vec::new();
+                        reader.read_until(b'\n',&mut buffer).unwrap();
+
+                        let server_answer = str::from_utf8(&buffer).unwrap();
+                        match server_answer {
+                            "MOVED\n" => *message_to_user = String::from("Successfully moved"),
+                            _ => *message_to_user = String::from("Error with move"),
+                        }
                     }
                     if ui.button("STOP").clicked() {
                         //pass
                     }
                 });
                 if ui.button("READ POSITION").clicked() {
-                    //pass
+                    stream.write("READ_POSITION".as_bytes());
+
+                    let mut reader = BufReader::new(&*stream);
+                    let mut buffer: Vec<u8> = Vec::new();
+                    reader.read_until(b'\n',&mut buffer).unwrap();
+
+                    let server_answer = str::from_utf8(&buffer).unwrap();
+
+                    if &server_answer[0..8] == "POSITION" {
+                        let vec: Vec<&str> = server_answer.split("_").collect();
+                        *corner_a = vec[1].parse::<f32>().unwrap();
+                        *corner_b = vec[2].parse::<f32>().unwrap();
+                        *corner_c = vec[3].parse::<f32>().unwrap();
+                        *corner_d = vec[4][..3].parse::<f32>().unwrap();
+                        *message_to_user = String::from("Position successfully read from server");
+                    } else {*message_to_user = String::from("Error with reading position")}
                 }
             }
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
 
                 if ui.button("Log in").clicked() {
-                    // logging in
+
+                    stream.write(format!("LOGIN_{login_str}_{password_str}").as_bytes()).expect("failed to write");
+
+                    let mut reader = BufReader::new(&*stream);
+                    let mut buffer: Vec<u8> = Vec::new();
+                    reader.read_until(b'\n',&mut buffer).unwrap();
+
+                    let server_answer = str::from_utf8(&buffer).unwrap();
+                    match server_answer {
+                        "LOGGED_IN\n" => { *message_to_user = String::from("You successfully logged in");
+                            *login_str = String::from("");
+                            *password_str = String::from("");
+                        },
+                        "NO_USER\n" => *message_to_user = String::from("User does not exist"),
+                        _ => *message_to_user = String::from("Error with logging in"),
+                    }
                 };
 
-                ui.horizontal(|ui| {
-                    ui.label("Login: ");
-                    ui.text_edit_singleline(login_str);
-                });
+                ui.label("");
 
                 ui.horizontal(|ui| {
                     ui.label("Password: ");
                     ui.text_edit_singleline(password_str);
                 });
 
-                ui.label("");
-
+                ui.horizontal(|ui| {
+                    ui.label("Login: ");
+                    ui.text_edit_singleline(login_str);
                 });
+
+                ui.label(format!("{message_to_user}"));
+
             });
+        });
 
         egui::CentralPanel::default().show(ctx, |ui| {
 
@@ -217,14 +264,5 @@ impl eframe::App for TemplateApp {
                 }
             });
         });
-
-        if false {
-            egui::Window::new("Window").show(ctx, |ui| {
-                ui.label("Windows can be moved by dragging them.");
-                ui.label("They are automatically sized based on contents.");
-                ui.label("You can turn on resizing and scrolling if you like.");
-                ui.label("You would normally chose either panels OR windows.");
-            });
-        }
     }
 }

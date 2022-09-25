@@ -14,6 +14,7 @@ use kiss3d::scene::SceneNode;
 use std::path::Path;
 use std::time::{Duration, Instant};
 use std::{thread, time};
+use std::fmt::Error;
 use std::fs::File;
 use std::io::{BufReader, BufRead};
 
@@ -54,13 +55,6 @@ fn main() {
     top.add_obj(path4, dir, standard_scale());
     top.add_obj(path5, dir, standard_scale());
 
-    //Coloring--------------------------------------------------------------------------------------
-
-    //obj1.set_color(1.0, 1.0, 0.0);
-    //obj2.set_color(1.0, 0.0, 1.0);
-    //obj3.set_color(0.0, 1.0, 1.0);
-    //top.set_color(1.0, 1.0, 1.0);
-
     //Creating CornerMemory object------------------------------------------------------------------
 
     let mut mem = CornerMemory::new();
@@ -77,18 +71,21 @@ fn main() {
         for line in buffered.lines() {
             let output = match line {
                 Ok(out) => out,
-                Err(err) => panic!("Bad")
+                Err(err) => panic!("{}", err),
             };
-            let number = output.parse::<f32>().unwrap_or(0.0);
+            if output.len() > 1 {}
+            let number = match output.parse::<f32>() {
+                Ok(out) => out,
+                Err(err) => 0.0,
+            };
             current_corners.push(number);
         }
+        if current_corners.len() > 3 {
 
-        if current_corners.len() > 0 {
             let current_corner_a = current_corners[0];
             let current_corner_b = current_corners[1];
             let current_corner_c = current_corners[2];
             let current_corner_d = current_corners[3];
-
 
             if &mem.axis_corner_a != &current_corner_a {
                 let corner = &current_corner_a - &mem.axis_corner_a;
@@ -122,5 +119,4 @@ fn main() {
         win.render_with_camera(&mut arc_ball);
 
     }
-
 }
