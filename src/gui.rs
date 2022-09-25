@@ -1,4 +1,4 @@
-use egui::{SliderOrientation, Ui, Vec2};
+use egui::{Color32, SliderOrientation, Ui, Vec2};
 use egui::style::Spacing;
 use egui::Label;
 
@@ -79,8 +79,8 @@ impl eframe::App for TemplateApp {
         let mut output = File::create("current_corners.txt").unwrap();
         write!(output, "{}\n{}\n{}\n{}", corner_a, corner_b, corner_c, corner_d).unwrap();
 
-        if *check_box{
-            stream.write(format!("MOVE-{corner_a}-{corner_b}-{corner_c}-{corner_d}").as_bytes()).expect("failed to write");
+        if (*check_box) && (*is_connected_user){
+            stream.write(format!("MOVE_{corner_a}_{corner_b}_{corner_c}_{corner_d}").as_bytes()).expect("failed to write");
 
             let mut reader = BufReader::new(&*stream);
             let mut buffer: Vec<u8> = Vec::new();
@@ -109,7 +109,7 @@ impl eframe::App for TemplateApp {
 
             if *check_box == false {
                 ui.horizontal(|ui| {
-                    if ui.button("MOVE").clicked() {
+                    if (ui.button("MOVE").clicked()) && (*is_connected_user) {
                         stream.write(format!("MOVE_{corner_a}_{corner_b}_{corner_c}_{corner_d}").as_bytes()).expect("failed to write");
 
                         let mut reader = BufReader::new(&*stream);
@@ -126,7 +126,7 @@ impl eframe::App for TemplateApp {
                         //pass
                     }
                 });
-                if ui.button("READ POSITION").clicked() {
+                if (ui.button("READ POSITION").clicked()) && (*is_connected_user) {
                     stream.write("READ_POSITION".as_bytes());
 
                     let mut reader = BufReader::new(&*stream);
@@ -158,16 +158,22 @@ impl eframe::App for TemplateApp {
 
                     let server_answer = str::from_utf8(&buffer).unwrap();
                     match server_answer {
-                        "LOGGED_IN\n" => { *message_to_user = String::from("You successfully logged in");
+                        "LOGGED_IN\n" => {
+                            *message_to_user = String::from("You successfully logged in");
                             *login_str = String::from("");
                             *password_str = String::from("");
+                            *is_connected_user = true;
                         },
                         "NO_USER\n" => *message_to_user = String::from("User does not exist"),
                         _ => *message_to_user = String::from("Error with logging in"),
                     }
                 };
 
-                ui.label("");
+                if *is_connected_user {
+                    ui.label("");
+                } else {
+                    ui.colored_label(Color32::from_rgb(255,0,0), "You are not logged in");
+                }
 
                 ui.horizontal(|ui| {
                     ui.label("Password: ");
